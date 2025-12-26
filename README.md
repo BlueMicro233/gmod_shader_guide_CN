@@ -9,6 +9,9 @@
 
 如果你不懂编程，建议先做几个 GLua 项目再回来看本指南，因为它比较有技术性而且有一定复杂度。
 
+> [!TIP]
+> 译者建议可以看看 [CS50x](https://cs50.harvard.edu/x/) 的前面几节课，主题分别是 C, Arrays, Algorithms, Memory 和 Data Structures。
+
 > [!NOTE]
 > 本指南**并不涵盖关于 GMod 着色器和 HLSL 的所有内容**，但我会尽力包含所有相关的重要部分。如果你有更新更好的创作，欢迎分享！欢迎创建 issue 或提交 pull request 并添加你自己的着色器示例。
 
@@ -20,7 +23,7 @@
 - [目录](#目录)
 - [什么是着色器？](#什么是着色器)
 - [着色器管线](#着色器管线)
-  - [screenspace\_general](#screenspace_general)
+- [screenspace\_general](#screenspace_general)
 - [入门](#入门)
 - [\[示例 1\] — 你的第一个着色器](#示例-1--你的第一个着色器)
 - [\[示例 2\] — 像素着色器](#示例-2--像素着色器)
@@ -65,7 +68,7 @@
 2. 每个顶点都会被发送到 GPU，在顶点着色器中完成将其**变换到屏幕空间**的操作。
 3. 顶点处理完成后会执行像素着色器（像素/片元着色器），像素着色器负责对[光栅化](https://en.wikipedia.org/wiki/Rasterisation)后的像素进行填色，这一步由你写的着色器代码控制。
 
-## screenspace_general
+# screenspace_general
 如果你之前已经了解过 `.vmt` 的工作方式，可以直接跳过本节。
 
 Source 引擎使用一种名为 `vmt` 的自定义材质文件扩展，用来控制材质的各类参数（flag）。在本仓库中我们使用了名为 `screenspace_general` 的着色器，它允许我们指定自定义的顶点和像素着色器。
@@ -141,7 +144,7 @@ https://github.com/lua9520/source-engine-2018-cstrike15_src/blob/master/material
 > `.vmt` 中的 `$ignorez 1` 对于 screenspace 类着色器是**必须**的，否则可能无法正常渲染。
 
 > [!TIP]
-> `.vmt` 中的 `$vertextransform 1` 确保坐标不是屏幕空间，这在使用 `render.` 函数时很有用，因为那一系列函数都是世界空间下的。
+> `.vmt` 中的 `$vertextransform 1` 确保坐标不在屏幕空间下，这在使用 `render.` 函数时很有用，因为那一系列函数都是世界空间下的。
 
 
 # [示例 3] — 像素着色器常量

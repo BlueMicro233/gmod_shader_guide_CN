@@ -18,13 +18,13 @@
 # 目录
 - [GMod 着色器综合教程](#gmod-着色器综合教程)
 - [目录](#目录)
-- [What is a Shader?](#what-is-a-shader)
-- [The Shader Pipeline](#the-shader-pipeline)
-- [screenspace\_general](#screenspace_general)
-- [Getting Started](#getting-started)
-- [\[Example 1\] - Your First Shader](#example-1---your-first-shader)
-- [\[Example 2\] - Pixel Shaders](#example-2---pixel-shaders)
-- [\[Example 3\] - Pixel Shader Constants](#example-3---pixel-shader-constants)
+- [什么是着色器？](#什么是着色器)
+  - [着色器管线](#着色器管线)
+  - [screenspace\_general](#screenspace_general)
+  - [入门](#入门)
+  - [\[示例 1\] — 第一个着色器](#示例-1--第一个着色器)
+  - [\[示例 2\] — 像素着色器](#示例-2--像素着色器)
+  - [\[示例 3\] — 像素着色器常量](#示例-3--像素着色器常量)
 - [\[Example 4\] - GPU Architecture](#example-4---gpu-architecture)
     - [Architecture](#architecture)
     - [Control Flow](#control-flow)
@@ -40,145 +40,118 @@
 - [\[Example 13\] - Volumetric Textures](#example-13---volumetric-textures)
 - [We're done!](#were-done)
 
-# What is a Shader?
-You may be asking to yourself, `what is a shader and why should I care?`, well have you ever wondered how games are able to display such complex geometry and graphics? At some point in any game you play, there is code running on your [GPU](https://en.wikipedia.org/wiki/Graphics_processing_unit) that determines the color of every pixel displayed on your screen. Yes, you heard that right, for *every* pixel there is code running to determine its color, in real time. Thats what we'll be writing today.
+# 什么是着色器？
+你可能会问自己，`着色器是什么？我为什么要关心这个问题？`好吧，那你有没有想过游戏是如何展示出如此复杂的几何体和特效的呢？在你玩的*任何游戏*中，你的 [GPU](https://en.wikipedia.org/wiki/Graphics_processing_unit) 上会一直运行一些代码来决定屏幕上每个像素的颜色。对，你没听错——**每一个像素都有相应的代码在实时决定它的颜色**，这正是我们今天要写的东西。
 
-Here are some examples of some cool shaders:\
-**GMod Grass shader (Me):**\
+下面是一些很酷的着色器示例：
+**GMod 草地着色器（作者：Meetric）：**\
 <img src="https://github.com/user-attachments/assets/66115f5f-2375-4429-a73d-253d35cda73d" width="80%" height="80%">\
-**GMod Parallax Mapping (Evgeny Akabenko):**\
+**GMod 视差遮蔽映射（Evgeny Akabenko）：**\
 <img src="https://github.com/user-attachments/assets/596fe2db-c05d-4a37-b293-a2764caeb349" width="80%" height="80%">\
-**GMod Volumetric Clouds (Evgeny Akabenko):**\
+**GMod 体积云（Evgeny Akabenko）：**\
 ![Untitled](https://github.com/user-attachments/assets/0aae45f1-9d7d-49b3-acc3-df3ae7ed8fcd)\
-**Half Life: Alyx liquid shader (Valve):**\
+**Half Life: Alyx 液体着色器（Valve）：**\
 ![ebd09ce02b4b9b7c3d59eb442ee6afe22f20d291](https://github.com/user-attachments/assets/0339658e-a9ae-4b0a-8aff-c0f55a11ae46)
 
-# The Shader Pipeline
-All graphics APIs, have something called a [Graphics Pipeline](https://en.wikipedia.org/wiki/Graphics_pipeline). This is a generalized, fixed set of stages which function to transform a 3 dimensional scene, into something the screen can display.
+## 着色器管线
+所有图形 API 都包含所谓的[图形流水线](https://en.wikipedia.org/wiki/Graphics_pipeline)（Graphics Pipeline），本质上是一组通用的、固定的流水线式阶段，它将 3D 场景数据转换为 2D 屏幕上显示的内容。
 
-The Graphics Pipeline:\
-![graphics_pipeline](https://github.com/user-attachments/assets/5683817d-1d03-448d-b019-3870d5a9852d)\
-<sup><sub>(image from [Vulkan Tutorial](https://vulkan-tutorial.com/Drawing_a_triangle/Graphics_pipeline_basics/Introduction))<sup><sub>
+图形流水线示意图：\
+![图形流水线](https://github.com/user-attachments/assets/5683817d-1d03-448d-b019-3870d5a9852d)\
+<sup><sub>(图片来自 [Vulkan Tutorial](https://vulkan-tutorial.com/Drawing_a_triangle/Graphics_pipeline_basics/Introduction))<sup><sub>
 
-This guide won't go into the specifics of the math. For now, all you need to know is:
-1. Every model that you see is made up of triangles and vertices (See [mat_wireframe](https://developer.valvesoftware.com/wiki/Mat_wireframe) for a visualization within Source).
-2. Each vertice gets sent to the GPU, to be transformed onto the screen. This transformation will be controlled within your vertex shader.
-3. The pixel shader then runs after that and fills in the [rasterized](https://en.wikipedia.org/wiki/Rasterisation) pixels with a color, controlled by your shader
+本指南不会深入到数学上的细节。目前你只需要知道：
+1. 你看到的每个模型都是由三角形和顶点组成的（在 Source 中可在控制台输入 [mat_wireframe](https://developer.valvesoftware.com/wiki/Mat_wireframe) 将顶点网格可视化）。
+2. 每个顶点都会被发送到 GPU，在顶点着色器中完成将其**变换到屏幕空间**的操作。
+3. 顶点处理完成后会执行像素着色器（像素/片元着色器），像素着色器负责对[光栅化](https://en.wikipedia.org/wiki/Rasterisation)后的像素进行填色，这一步由你写的着色器代码控制。
 
-# screenspace_general
-(Feel free to skip this section if you already know about how .vmt's work)
+## screenspace_general
+如果你之前已经了解过 `.vmt` 的工作方式，可以直接跳过本节。
 
-Source engine has a custom extension named `vmt`. This basically controls aspects (flags) of a custom material.\
-In this case, we are taking advantage of a shader named `screenspace_general`, which lets us set custom vertex and pixel shaders.
+Source 引擎使用一种名为 `vmt` 的自定义材质文件扩展，用来控制材质的各类参数（flag）。在本仓库中我们使用了名为 `screenspace_general` 的着色器，它允许我们指定自定义的顶点和像素着色器。
 
 > [!NOTE]
-> A material can have many flags, but only 1 shader.
+> 一个材质可以包含很多 flag，但只能指定一个着色器。
 
-Despite its name, screenspace_general is not actually screenspace (as of the 2015 CS:S branch), and was likely used for testing.
+尽管名字里有 "screenspace"（屏幕空间），`screenspace_general` 在 CS:S 2015 分支中并非真正的屏幕空间着色器，它更像一个用于测试的通用着色器。
 
-More info on .vmt's:\
+更多 `.vmt` 相关信息:\
 https://developer.valvesoftware.com/wiki/VMT 
 
-More info on screenspace_general:\
+更多 `screenspace_general` 相关信息:\
 https://developer.valvesoftware.com/wiki/Screenspace_General 
 
-Source code of the shader (From CS:S 2015):\
+`screenspace_general` 源码 (来自 CS:S 2015):\
 https://github.com/lua9520/source-engine-2018-cstrike15_src/blob/master/materialsystem/stdshaders/screenspace_general.cpp
 
-# Getting Started
-To start out, clone this repo into your `GarrysMod/garrysmod/addons` folder, there are 13 examples for you to look at and follow ingame.\
-Each example will teach you about a specific topic about shaders. My hope is that by reading this guide and visualizing the shader you can get a better grasp of what is going on.
+## 入门
+首先，将本仓库克隆到 `GarrysMod/garrysmod/addons` 文件夹下。仓库内包含 13 个示例，可以在游戏内运行并跟随练习，每个示例讲解一个着色器具体主题。希望通过阅读本指南，并在游戏中运行相应的着色器，你能更好地理解其工作原理。
 
-Once loaded in, you should be able to type `shader_example 1` in your console to view the first shader. (It should just be a red rectangle on your screen) It isn't very interesting but we'll work on making some cool stuff.
+加载完成后，在控制台输入 `shader_example 1` 来查看第一个示例（会在屏幕上显示一个红色矩形）。虽然看上去很简单，但这是一切的开始。
 
-# [Example 1] - Your First Shader
-In order to make a shader, we will need something to compile it. For this guide I have decided to use [ShaderCompile](https://github.com/SCell555/ShaderCompile), as it supports 64 bit and is a hell of a lot easier than setting up the normal SourceEngine shader compiler.
+## [示例 1] — 第一个着色器
+要学习制作着色器，首先得知道如何编译它。本指南选择使用 [ShaderCompile](https://github.com/SCell555/ShaderCompile)（支持 64 位），因为它仅仅是一个单程序，比普通的 Source 着色器编译环境的繁杂配置简单许多。
 
-After taking a look at `shader_example 1`, please close GMod and navigate inside this repo to `gmod_shader_guide/shaders`.\
-The source code of all the shaders are in this folder as `.hlsl` files.\
-You may have also noticed a bunch of `.h` files too. Ignore these for now, we'll use them in our shaders later
+查看完 `shader_example 1` 后，退出 GMod，进入 `gmod_shader_guide/shaders` 目录。所有着色器源码都在后缀为 `.hlsl` 的文件里面，目录中还有若干 `.h` 头文件，暂时可忽略，后面会使用到。
 
-Now, for reference, the name of a shader is very important, so lets split it into 5 parts.
-1. `example1` - The name of the shader, this can be anything you want.
-2. `_` - Required underscore to separate the name and the rest of the data.
-3. `ps` - Stands for Pixel Shader, can also be `vs` (Can you guess what it stands for?)
-4. `2x` - The shader version. I will be using `2x`, as it is the most supported. `30` is also valid and has less restrictions.
-5. `.hlsl` - The file extension, all source shaders use hlsl
+着色器文件名格式很重要，可分为以下 5 部分：
+1. `example1` — 着色器名称；
+2. `_` — 必须的分隔符；
+3. `ps` — 表示像素着色器（pixel shader），也可以是 `vs`（顶点着色器）；
+4. `2x` — 着色器版本，本指南使用兼容性更广的 `2x`；
+5. `.hlsl` — 源文件扩展名。
 
-You must ENSURE that the name stays exactly in this format, or the tools provided won't work.
+按照要求命名后，将 `example1_ps2x.hlsl` 拖到 `build_single_shader.bat` 上即可编译，生成的编译产物会放入 `fxc` 目录，GMod 会从这里加载着色器。编译后的着色器为 `.vcs`（Valve Compiled Shader）。
 
-Now, we're going to overwrite an existing shader with a new one.\
-Drag `example1_ps2x.hlsl` on top of `build_single_shader.bat` and it should compile and automatically put the shader into `fxc`, which is where GMod shaders are loaded from.\
-Compiled shaders are `.vcs` files, which stands for `Valve Compiled Shader`.
-
-Next time you go in game (don't forget to type `shader_example 1`!), you should see a bright green square at the top left of your screen. If you do, congratulations! You have successfully compiled your first shader.
-
-If the square is red, we haven't overwritten anything and you've probably missed a step. Try restarting your game or checking for compile errors.
+重新进入游戏并执行 `shader_example 1`，应能在屏幕左上角看到一个亮绿色方块，说明编译成功。若看到的是红色方块，说明没有覆盖旧着色器，检查是否遗漏步骤或查看编译错误。
 
 > [!NOTE]
-> Editing (or recompiling) a shader without modifying the .vmt requires a game restart.\
-> Until you want to start editing .vmt's I suggest just restarting the game as it is the easiest method. Launching the game with `-noworkshop` helps a lot with load times.
+> 修改着色器但不改 `.vmt` 时需要重启游戏来重新加载。\
+> 在你真正开始学习如何编辑 `.vmt` 之前，建议直接重启游戏——这是最简单的方法。添加启动选项 `-noworkshop` 有时会大大缩短加载时间。
 
 > [!TIP]
-> When you eventually start developing your own shaders, make sure to give them a distinct name, or you might get conflictions
+> 当你开始写自己的着色器时，请尽量给它们取一个有辨识度的、不普通的名称，否则可能会出现名称冲突。
 
 > [!NOTE]
-> Shader model `30` is untested on Linux systems and (supposedly,) certain features may not work as intended.\
-> If you notice any problems with Linux shaders, please open a pull request or submit an issue for documentation purposes.
+> Shader Model `30`(SM 3.0) 在 Linux 系统上未经充分测试，某些功能可能无法按预期工作。\
+> 如果你在 Linux 上发现着色器相关问题，请提交 pull request 或在本仓库开 issue 以便记录和改进。
 
 ![image](https://github.com/user-attachments/assets/f009c4a2-4e2b-4b65-a297-7f8fa9434880)
 
-# [Example 2] - Pixel Shaders
-Pixel (or more accurately, Fragment) shaders run a section of code for every pixel on the screen.\
-In the first example, we learned how to compile a basic shader, but now we're going to try modifying one.\
-Type `shader_example 2` in console and take a quick look at what this shader currently produces. It should look like this:\
-![image](https://github.com/user-attachments/assets/e33ce1e3-12d8-4bb8-941f-bc7b1c8f4dce)
+## [示例 2] — 像素着色器
+像素着色器（Pixel / Fragment shader）是逐像素运行的代码。在[示例 1]中我们学会了编译基础着色器，现在我们尝试修改一个已有的像素着色器。
 
-Now, navigate to `gmod_shader_guide/shaders` and open `example2_ps2x.hlsl`.\
-I have overcommented `example2_ps2x.hlsl`. Read that to get a basic grasp of the HLSL syntax. It is a lot like C or C++.\
-Try modifying the shader to do something different. Don't forget to recompile your shader!
+先试着在控制台输入 `shader_example 2` 看看效果：![image](https://github.com/user-attachments/assets/e33ce1e3-12d8-4bb8-941f-bc7b1c8f4dce)
 
-If you would like to try changing the shader ingame, compile your shader, navigate to `gmod_shader_guide/shaders/fxc` and change `example2_ps20b.vcs` to something like `example2a_ps20b.vcs`.\
-Now, navigate to `gmod_shader_guide/materials/gmod_shader_guide`. This is the folder which holds all of the materials.\
-Open `example2.vmt` in any text editor (notepad or Visual Studio Code works fine)\
-Like I explained before, .vmt files control information about the material. In this case, we are interested in the `$pixshader` flag which controls the pixel shader the material uses. Change it to whatever you renamed the shader to, so the line looks something like `$pixshader "example2a_ps20b"`, save it, and view your changes.
+打开 `gmod_shader_guide/shaders/example2_ps2x.hlsl`，**源码带有大量注释，你需要通过阅读它们来学习 HLSL 语法**（类似 C/C++）。**修改完成后别忘了重新编译！**
+
+如果想在游戏中热加载修改，先将编译输出在 `gmod_shader_guide/shaders/fxc` 的 IL 文件 `example2_ps20b.vcs` 重命名为 `example2a_ps20b.vcs`，然后修改对应材质文件（`gmod_shader_guide/materials/gmod_shader_guide/example2.vmt`）中的 `$pixshader` 所指的像素着色器文件为新的 `$pixshader "example2a_ps20b"`，保存后查看效果。
 
 > [!NOTE]
-> When hotloading shaders, once a name is used, it cannot be used again. So if you wanted to change your shader a second time, you'd need to name it something like `example2b_ps20b`
+> 使用热加载时，同名着色器不能重复使用，**需要给它更换新名称**。比如我们刚刚修改的像素着色器名字叫 `example2a_ps20b` ，如果修改后再次热加载一遍，就要把名字改成 `example2b_ps20b` 或者类似的与上一次不同的名称。
 
 > [!NOTE]
-> When hotloading shaders, ensure the compiled .vcs shader exists before saving changes to the .vmt
+> 在保存 .vmt 着色器参数之前，请确保对应的 .vcs 着色器文件是存在的。
 
 > [!TIP]
-> You might have noticed the `$ignorez 1` flag in the .vmt, this is because all screenspace shaders *need* this flag to work properly! Otherwise they might not render
+> `.vmt` 中的 `$ignorez 1` 对于 screenspace 类着色器是**必须**的，否则可能无法正常渲染。
 
 > [!TIP]
-> The `$vertextransform 1` flag in the .vmt ensures coordinates are not in screenspace. This is useful since all of the `render.` functions are in worldspace.
+> `.vmt` 中的 `$vertextransform 1` 确保坐标不是屏幕空间，这在使用 `render.` 函数时很有用，因为那一系列函数都是世界空间下的。
 
-# [Example 3] - Pixel Shader Constants
-Hopefully by now you have a basic grasp of the HLSL syntax. Now we're going to be looking at a slightly more complex shader.\
-Type `shader_example 3` in console and take a quick look at what our shader produces. It should look like this:\
-![image](https://github.com/user-attachments/assets/1a04f2e5-2de7-40e1-bec3-67dd46aea5b9)
 
-In this shader, we are sampling from a texture, and inputting [CurTime](https://wiki.facepunch.com/gmod/Global.CurTime) to make it appear animated.
+## [示例 3] — 像素着色器常量
+到现在你应该对 HLSL 语法有了基本的了解，本节展示一个略复杂的像素着色器。在控制台输入 `shader_example 3` 查看效果（如上图）。
 
-As we already know, each .vmt represents a material, with a shader. What we're doing, is giving the material a global value which the shader can use. 
-In this case, we are inputting CurTime, which you can see in the `example3` function in `gmod_shader_guide/lua/autorun/client/shader_examples.lua`.
+此着色器从纹理采样，并将游戏全局时间 `CurTime` 作为输入传入以实现动画效果。每个 `.vmt` 文件代表一个材质及其着色器，我们通过在 `.vmt` 中设置全局数值来把数据传给着色器。本示例使用 `$c0_x` 传入一个浮点数作为 `CurTime`，相关实现可在 `gmod_shader_guide/lua/autorun/client/shader_examples.lua` 的 `example3` 函数中看到。
 
-Unfortunately, screenspace_general has a limited number of global constants we are allowed to input (which you can see [here](https://developer.valvesoftware.com/wiki/Screenspace_General)). However, I find it unlikely you will actually need to use all of them.
+注意：`screenspace_general` 可用的全局常量数量有限（参见[本链接](https://developer.valvesoftware.com/wiki/Screenspace_General)），但一般情况下已经够了。本示例在 `.vmt` 中还定义了 `$c0_y`（尽管 HLSL 源码中未用到），这是为了演示你可以在 `.vmt` 中放入额外参数并在着色器内以不同方式利用它们。
 
-In this example, I am using input `$c0_x`, which takes a float to give CurTime to the shader.
-
-Now, lets check the code behind this shader..\
-Open `example3.vmt` and take a look at its parameters. Try modifying the basetexture to something like `hunter/myplastic` or `phoenix_storms/wood` and seeing what changes!
-
-Note how, in the .vmt, I define `$c0_y` despite it not being used in the shader HLSL.\
-After playing around with the .vmt, open `example3_ps2x.hlsl` and try to understand its code.\
-Try doing something with the unused `$c0_y` parameter!
+现在打开 `example3.vmt` 查看其参数，尝试修改 `basetexture`（例如 `hunter/myplastic` 或 `phoenix_storms/wood`）来观察变化；然后打开 `example3_ps2x.hlsl` 阅读其源码，尝试用未使用的 `$c0_y` 做些实验，看看能做出什么效果。
 
 > [!TIP]
-> There are some more, undocumented pixel shader constants that are automatically set by Source Engine. They can be viewed [here](https://github.com/ficool2/sdk_screenspace_shaders/blob/94071cb6d464a7c04ced726770ca87a7ecd5d9a1/shadersrc/common.hlsl#L29).\
-> Most aren't too useful, but someone might find them handy one day
+> Source Engine 还有一些未记录的像素着色器常量，它们可以在 [这里](https://github.com/ficool2/sdk_screenspace_shaders/blob/94071cb6d464a7c04ced726770ca87a7ecd5d9a1/shadersrc/common.hlsl#L29) 找到。\
+> 其中大多数可能没什么用，但有些时候会派上用场。
 
 # [Example 4] - GPU Architecture
 Now that we know the basic syntax and general control of pixel shaders, I feel like its a good time to start looking at GPU architecture and control flow. It is important for you to think about GPUs as an entirely different computer, because in reality, they are. GPUs have their own processor, RAM, motherboard, firmware, and even cooling. 

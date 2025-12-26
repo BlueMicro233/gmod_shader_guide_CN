@@ -19,26 +19,26 @@
 - [GMod 着色器综合教程](#gmod-着色器综合教程)
 - [目录](#目录)
 - [什么是着色器？](#什么是着色器)
-  - [着色器管线](#着色器管线)
+- [着色器管线](#着色器管线)
   - [screenspace\_general](#screenspace_general)
-  - [入门](#入门)
-  - [\[示例 1\] — 第一个着色器](#示例-1--第一个着色器)
-  - [\[示例 2\] — 像素着色器](#示例-2--像素着色器)
-  - [\[示例 3\] — 像素着色器常量](#示例-3--像素着色器常量)
-- [\[Example 4\] - GPU Architecture](#example-4---gpu-architecture)
-    - [Architecture](#architecture)
-    - [Control Flow](#control-flow)
-    - [Loops](#loops)
-- [\[Example 5\] - Vertex Shaders](#example-5---vertex-shaders)
-- [\[Example 6\] - Vertex Shader Constants](#example-6---vertex-shader-constants)
-- [\[Example 7\] - Render Targets](#example-7---render-targets)
-- [\[Example 8\] - Multi-Render Targets](#example-8---multi-render-targets)
-- [\[Example 9\] - Depth](#example-9---depth)
-- [\[Example 10\] - Shaders on Models](#example-10---shaders-on-models)
-- [\[Example 11\] - IMeshes](#example-11---imeshes)
-- [\[Example 12\] - Point Sprites](#example-12---point-sprites)
-- [\[Example 13\] - Volumetric Textures](#example-13---volumetric-textures)
-- [We're done!](#were-done)
+- [入门](#入门)
+- [\[示例 1\] — 你的第一个着色器](#示例-1--你的第一个着色器)
+- [\[示例 2\] — 像素着色器](#示例-2--像素着色器)
+- [\[示例 3\] — 像素着色器常量](#示例-3--像素着色器常量)
+- [\[示例 4\] - GPU 架构](#示例-4---gpu-架构)
+    - [架构基础](#架构基础)
+    - [控制流](#控制流)
+    - [循环](#循环)
+- [\[示例 5\] - 顶点着色器](#示例-5---顶点着色器)
+- [\[示例 6\] - 顶点着色器常量](#示例-6---顶点着色器常量)
+- [\[示例 7\] - 渲染目标 Render Target](#示例-7---渲染目标-render-target)
+- [\[示例 8\] - 多渲染目标 (MRT)](#示例-8---多渲染目标-mrt)
+- [\[示例 9\] - 深度缓冲](#示例-9---深度缓冲)
+- [\[示例 10\] - 模型上的着色器](#示例-10---模型上的着色器)
+- [\[示例 11\] - 实例化网格 (IMeshes)](#示例-11---实例化网格-imeshes)
+- [\[示例 12\] - 点精灵](#示例-12---点精灵)
+- [\[示例 13\] - 3D 材质](#示例-13---3d-材质)
+- [完成啦！](#完成啦)
 
 # 什么是着色器？
 你可能会问自己，`着色器是什么？我为什么要关心这个问题？`好吧，那你有没有想过游戏是如何展示出如此复杂的几何体和特效的呢？在你玩的*任何游戏*中，你的 [GPU](https://en.wikipedia.org/wiki/Graphics_processing_unit) 上会一直运行一些代码来决定屏幕上每个像素的颜色。对，你没听错——**每一个像素都有相应的代码在实时决定它的颜色**，这正是我们今天要写的东西。
@@ -53,7 +53,7 @@
 **Half Life: Alyx 液体着色器（Valve）：**\
 ![ebd09ce02b4b9b7c3d59eb442ee6afe22f20d291](https://github.com/user-attachments/assets/0339658e-a9ae-4b0a-8aff-c0f55a11ae46)
 
-## 着色器管线
+# 着色器管线
 所有图形 API 都包含所谓的[图形流水线](https://en.wikipedia.org/wiki/Graphics_pipeline)（Graphics Pipeline），本质上是一组通用的、固定的流水线式阶段，它将 3D 场景数据转换为 2D 屏幕上显示的内容。
 
 图形流水线示意图：\
@@ -73,7 +73,7 @@ Source 引擎使用一种名为 `vmt` 的自定义材质文件扩展，用来控
 > [!NOTE]
 > 一个材质可以包含很多 flag，但只能指定一个着色器。
 
-尽管名字里有 "screenspace"（屏幕空间），`screenspace_general` 在 CS:S 2015 分支中并非真正的屏幕空间着色器，它更像一个用于测试的通用着色器。
+尽管名字里有 "screenspace"（屏幕空间），但是 `screenspace_general` 在 CS:S 2015 引擎分支中并非真正的屏幕空间着色器，它更像一个用于测试的通用着色器。
 
 更多 `.vmt` 相关信息:\
 https://developer.valvesoftware.com/wiki/VMT 
@@ -84,26 +84,30 @@ https://developer.valvesoftware.com/wiki/Screenspace_General
 `screenspace_general` 源码 (来自 CS:S 2015):\
 https://github.com/lua9520/source-engine-2018-cstrike15_src/blob/master/materialsystem/stdshaders/screenspace_general.cpp
 
-## 入门
-首先，将本仓库克隆到 `GarrysMod/garrysmod/addons` 文件夹下。仓库内包含 13 个示例，可以在游戏内运行并跟随练习，每个示例讲解一个着色器具体主题。希望通过阅读本指南，并在游戏中运行相应的着色器，你能更好地理解其工作原理。
+# 入门
+首先，将本仓库克隆到 `GarrysMod/garrysmod/addons` 文件夹下。仓库内包含 13 个示例，可以在游戏内运行并跟随练习，每个示例讲解一个着色器具体主题。希望通过阅读本指南并在游戏中运行和修改相应的着色器，你能更好地理解其工作原理。
 
 加载完成后，在控制台输入 `shader_example 1` 来查看第一个示例（会在屏幕上显示一个红色矩形）。虽然看上去很简单，但这是一切的开始。
 
-## [示例 1] — 第一个着色器
+# [示例 1] — 你的第一个着色器
 要学习制作着色器，首先得知道如何编译它。本指南选择使用 [ShaderCompile](https://github.com/SCell555/ShaderCompile)（支持 64 位），因为它仅仅是一个单程序，比普通的 Source 着色器编译环境的繁杂配置简单许多。
 
-查看完 `shader_example 1` 后，退出 GMod，进入 `gmod_shader_guide/shaders` 目录。所有着色器源码都在后缀为 `.hlsl` 的文件里面，目录中还有若干 `.h` 头文件，暂时可忽略，后面会使用到。
+看完 `shader_example 1` 的效果后，我们先把目光移出 GMod 游戏，进入到 `gmod_shader_guide/shaders` 目录。所有着色器源码都在后缀为 `.hlsl` 的文件里面，目录中还有若干 `.h` 头文件，我们暂时不管它们，后面会用到。
 
 着色器文件名格式很重要，可分为以下 5 部分：
 1. `example1` — 着色器名称；
 2. `_` — 必须的分隔符；
 3. `ps` — 表示像素着色器（pixel shader），也可以是 `vs`（顶点着色器）；
 4. `2x` — 着色器版本，本指南使用兼容性更广的 `2x`；
-5. `.hlsl` — 源文件扩展名。
+5. `.hlsl` — 源文件扩展名，HLSL 是高级着色器语言（High-Level Shader Language）的缩写;
 
-按照要求命名后，将 `example1_ps2x.hlsl` 拖到 `build_single_shader.bat` 上即可编译，生成的编译产物会放入 `fxc` 目录，GMod 会从这里加载着色器。编译后的着色器为 `.vcs`（Valve Compiled Shader）。
+按照要求命名后，把 `example1_ps2x.hlsl` 拖到 `build_single_shader.bat` 上即可编译，生成的着色器中间代码会放入 `fxc` 目录，GMod 会从这里加载着色器。
 
-重新进入游戏并执行 `shader_example 1`，应能在屏幕左上角看到一个亮绿色方块，说明编译成功。若看到的是红色方块，说明没有覆盖旧着色器，检查是否遗漏步骤或查看编译错误。
+编译后的着色器为 `.vcs`（Valve Compiled Shader），它是一种中间代码，显卡驱动会实时地把它翻译成 GPU 能读懂的机器指令。
+
+重新进入游戏并在控制台键入 `shader_example 1`，如果能在屏幕左上角看到一个**亮绿色**的矩形，就说明编译成功。
+
+若看到的还是红色矩形，说明旧着色器没被覆盖，请检查是否遗漏步骤或查看编译错误。
 
 > [!NOTE]
 > 修改着色器但不改 `.vmt` 时需要重启游戏来重新加载。\
@@ -118,7 +122,7 @@ https://github.com/lua9520/source-engine-2018-cstrike15_src/blob/master/material
 
 ![image](https://github.com/user-attachments/assets/f009c4a2-4e2b-4b65-a297-7f8fa9434880)
 
-## [示例 2] — 像素着色器
+# [示例 2] — 像素着色器
 像素着色器（Pixel / Fragment shader）是逐像素运行的代码。在[示例 1]中我们学会了编译基础着色器，现在我们尝试修改一个已有的像素着色器。
 
 先试着在控制台输入 `shader_example 2` 看看效果：![image](https://github.com/user-attachments/assets/e33ce1e3-12d8-4bb8-941f-bc7b1c8f4dce)
@@ -140,7 +144,7 @@ https://github.com/lua9520/source-engine-2018-cstrike15_src/blob/master/material
 > `.vmt` 中的 `$vertextransform 1` 确保坐标不是屏幕空间，这在使用 `render.` 函数时很有用，因为那一系列函数都是世界空间下的。
 
 
-## [示例 3] — 像素着色器常量
+# [示例 3] — 像素着色器常量
 到现在你应该对 HLSL 语法有了基本的了解，本节展示一个略复杂的像素着色器。在控制台输入 `shader_example 3` 查看效果（如上图）。
 
 此着色器从纹理采样，并将游戏全局时间 `CurTime` 作为输入传入以实现动画效果。每个 `.vmt` 文件代表一个材质及其着色器，我们通过在 `.vmt` 中设置全局数值来把数据传给着色器。本示例使用 `$c0_x` 传入一个浮点数作为 `CurTime`，相关实现可在 `gmod_shader_guide/lua/autorun/client/shader_examples.lua` 的 `example3` 函数中看到。
@@ -153,18 +157,18 @@ https://github.com/lua9520/source-engine-2018-cstrike15_src/blob/master/material
 > Source Engine 还有一些未记录的像素着色器常量，它们可以在 [这里](https://github.com/ficool2/sdk_screenspace_shaders/blob/94071cb6d464a7c04ced726770ca87a7ecd5d9a1/shadersrc/common.hlsl#L29) 找到。\
 > 其中大多数可能没什么用，但有些时候会派上用场。
 
-# [Example 4] - GPU Architecture
+# [示例 4] - GPU 架构
 Now that we know the basic syntax and general control of pixel shaders, I feel like its a good time to start looking at GPU architecture and control flow. It is important for you to think about GPUs as an entirely different computer, because in reality, they are. GPUs have their own processor, RAM, motherboard, firmware, and even cooling. 
 
 GPUs operate *very* different compared to CPUs, so be prepared to think a bit differently than normal.
 
-### Architecture
+### 架构基础
 
 GPU Architecture is meant for very specific set of instructions for optimial speed. GPUs are *really* good at floating point operations. Infact they are so good, a modern GPU (in 2025) can do 15 TFLOPS (or 15,000,000,000,000) floating point operations per second. That is *fast*. 
 
 Unfortunately however, that is pretty much all they're good at. GPUs are *ONLY* good at fast floating point (and integer) arithmetic. This makes them fast, but limited (think of a CPU, but dumber). Shader model 20b (the one we are using) doesn't even support doubles. If you do somehow get doubles working though, I would advise against it, as they are extremely slow and not what the GPU architecture is meant for.
 
-### Control Flow
+### 控制流
 
 Lets move on to control flow. In languages on the CPU (Lua, C++, etc), an `if` statement is not a big deal. Guarding and preventing execution of code is usually a good thing for performance.
 
@@ -187,15 +191,14 @@ Remember that if all threads take the same branch, efficiency is not lost.
 
 If none of that made sense, all you really need to know is that you should avoid code branching, wherever possible. This includes (but is not limited to): `if-else`, `continue`, and `break` statements.
 
-### Loops
-
+### 循环
 In this guide, We are using shader model 20b. Model 20b is interesting because (as far as I'm aware) all loops need to be [unrolled](https://en.wikipedia.org/wiki/Loop_unrolling), and cannot be dynamic.
 
 Shader model 30 does support dynamic loops, but for now I would suggest avoiding them, as infinite loops on the GPU lock up your computer and usually require a full system restart.
 
 To continue, navigate to `gmod_shader_guide/shaders` and take a look at `example4_ps2x.hlsl`
 
-# [Example 5] - Vertex Shaders
+# [示例 5] - 顶点着色器
 
 Now that we have the basics on everything pixel shader related, it's time to jump into vertex shaders.
 
@@ -224,7 +227,7 @@ Then, take a look at `example5_ps2x.hlsl`. Feel free to make your own changes.
 > [!TIP]
 > For performance reasons, it is generally a good idea to keep as many calculations as possible within the vertex shader, because the pixel shader runs a lot more than the vertex shader.
 
-# [Example 6] - Vertex Shader Constants
+# [示例 6] - 顶点着色器常量
 
 <img width="484" height="530" alt="meme" src="https://github.com/user-attachments/assets/a4e2bb67-879d-4d06-b268-2bc7d3a89725" />
 
@@ -244,7 +247,7 @@ After you view `shader_example 6`, open `example6_vs2x.hlsl` and `gmod_shader_gu
 > [!NOTE]
 > This example reuses the pixel shader from [Example 5](#example-5---vertex-shaders)
 
-# [Example 7] - Render Targets
+# [示例 7] - 渲染目标 Render Target
 We're going to take a small detour with shaders to talk about render targets, as they are very important when implementing your own render pipelines.
 
 The concept of a render target is quite simple. A render target is just a texture that you can edit.\
@@ -270,7 +273,7 @@ Because this example is more of an explanation, it doesn't use any custom shader
 > [!NOTE]
 > You can input a render target as a sampler with [IMaterial:SetTexture](https://wiki.facepunch.com/gmod/IMaterial:SetTexture)
 
-# [Example 8] - Multi-Render Targets
+# [示例 8] - 多渲染目标 (MRT)
 Multi-render target (abbreviated MRT) is a rendering technique which allows a shader to output to multiple render targets in a single pass. This means you can output more useful data which may be required in later stages of a rendering pipeline.
 
 ![image](https://github.com/user-attachments/assets/d4105837-485f-4677-a802-99740487f91f)
@@ -285,7 +288,7 @@ Take a look at `example8_ps2x.hlsl` for the syntax.
 > [!NOTE]
 > Any operations on the GPU which read or write memory are quite expensive, this includes (but is not limited to) any of the texture sampler functions (tex1D, tex2D, tex2Dlod, etc) and MRT
 
-# [Example 9] - Depth
+# [示例 9] - 深度缓冲
 This isn't something that everybody really needs, but it can be handy for a few different operations, so I'll document it.
 
 A [depth buffer](https://en.wikipedia.org/wiki/Z-buffering) is basically just a rendertarget that stores the depth of a pixel on the screen. It essentially determines what triangles are allowed to draw on top of other triangles. A lower depth value means that a triangle is closer to the screen.
@@ -306,7 +309,7 @@ Take a look at `example9_vs2x.hlsl` and `example9_ps2x.hlsl` for syntax and expl
 > [!NOTE]
 > The DEPTH0 semantic disables culling optimizations and creates shader overdraw, which can cause high [fillrates](https://en.wikipedia.org/wiki/Fillrate) and negatively impact performance. Avoid it if possible.
 
-# [Example 10] - Shaders on Models
+# [示例 10] - 模型上的着色器
 screenspace_general has a flaw, and unfortunately this flaw is stopping the shader from being able to be used on normal props without some issues.\
 ![image](https://github.com/user-attachments/assets/9b92b1e2-2844-46ff-b443-4ad8b82e9942)
 
@@ -330,7 +333,7 @@ You will also need to have flags `$softwareskin 1`, `$vertexnormal 1`, and `$mod
 
 And finally, `$model` just tells SourceEngine that you can put your material on a physical entity (I'm honestly not too sure why this flag exists. Is it for performance reasons? So shaders load faster? I honestly don't know).
 
-# [Example 11] - IMeshes
+# [示例 11] - 实例化网格 (IMeshes)
 
 I think its time we should move into IMeshes, which are a form of procedural geometry.
 
@@ -359,7 +362,7 @@ Just remember when rendering these meshes to call `render.OverrideDepthEnable` o
 > [!NOTE]
 > All of the warnings on [this page](https://wiki.facepunch.com/gmod/Enums/MATERIAL) stating the primative types "don't work" are incorrect. They all work.
 
-# [Example 12] - Point Sprites
+# [示例 12] - 点精灵
 We're nearing the end of this guide, which means that the upcoming examples are less practical, but still worth documenting.
 
 The point sprites in Source Engine are displayed on the screen using a [geometry shader](https://learn.microsoft.com/en-us/windows/win32/direct3d11/geometry-shader-stage).
@@ -381,7 +384,7 @@ Unfortunately, this is pretty much the most you can do with them within Source E
 > [!NOTE]
 > This example reuses the pixel shader from [Example 11](#example-11---imeshes)
 
-# [Example 13] - Volumetric Textures
+# [示例 13] - 3D 材质
 Remember earlier when we sampled textures? Well you can actually sample them in 3D too! These are called Volumetric Textures and you can imagine them like a ton of 2D images stacked on top of each other.
 
 Example of a volumetric texture:\
@@ -400,7 +403,7 @@ This can also be used for animated textures, as they aren't possible traditional
 > [!NOTE]
 > This example might not work on AMD cards, I'm not actually sure why.
 
-# We're done!
+# 完成啦！
 If you made it here, you (hopefully) have read and understand everything there is to know (or atleast, that I know) about GMod shaders.\
 Please note that this is NOT a comprehensive guide on everything HLSL! There is still plenty more to learn, but this is definitely a good starting point.
 

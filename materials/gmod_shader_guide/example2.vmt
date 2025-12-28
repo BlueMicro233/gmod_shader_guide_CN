@@ -1,0 +1,6 @@
+screenspace_general 
+{
+	$pixshader "example2b_ps20b"
+	$ignorez 1
+	$vertextransform 1
+}

@@ -150,7 +150,9 @@ https://github.com/lua9520/source-engine-2018-cstrike15_src/blob/master/material
 # [示例 3] — 像素着色器常量
 到现在你应该对 HLSL 语法有了基本的了解，本节展示一个略复杂的像素着色器。在控制台输入 `shader_example 3` 查看效果（如上图）。
 
-此着色器从纹理采样，并将游戏全局时间 `CurTime` 作为输入传入以实现动画效果。每个 `.vmt` 文件代表一个材质及其着色器，我们通过在 `.vmt` 中设置全局数值来把数据传给着色器。本示例使用 `$c0_x` 传入一个浮点数作为 `CurTime`，相关实现可在 `gmod_shader_guide/lua/autorun/client/shader_examples.lua` 的 `example3` 函数中看到。
+此着色器从纹理采样，并将游戏的全局时间 `CurTime` 作为输入传入以实现动画效果。每个 `.vmt` 文件代表一个材质及其着色器，我们通过在 `.vmt` 中设置全局数值来把数据传给着色器。
+
+本示例使用 `$c0_x` 传入一个浮点数作为 `CurTime`，相关实现可在 `gmod_shader_guide/lua/autorun/client/shader_examples.lua` 的 `example3` 函数中看到。
 
 注意：`screenspace_general` 可用的全局常量数量有限（参见[本链接](https://developer.valvesoftware.com/wiki/Screenspace_General)），但一般情况下已经够了。本示例在 `.vmt` 中还定义了 `$c0_y`（尽管 HLSL 源码中未用到），这是为了演示你可以在 `.vmt` 中放入额外参数并在着色器内以不同方式利用它们。
 
@@ -161,45 +163,53 @@ https://github.com/lua9520/source-engine-2018-cstrike15_src/blob/master/material
 > 其中大多数可能没什么用，但有些时候会派上用场。
 
 # [示例 4] - GPU 架构
-现在我们已经了解了像素着色器的基本语法和总体控制，接下来是时候开始研究 GPU 架构与控制流了。你需要把 GPU 当作一台完全不同的计算机来思考——事实上它确实是：GPU 有自己的处理器、显存、主板、固件，甚至独立散热。
+我们已经了解像素着色器的基本语法和总体控制，是时候开始研究 GPU 架构与控制流了。
+
+你需要把 GPU 当作一台完全不同的计算机来思考——事实上它确实是：GPU 有自己的处理器、显存、主板、固件，甚至独立散热。
 
 与 CPU 相比，GPU 的工作方式截然不同，所以你需要以不同于常规的思路来考虑问题。
 
 ### 架构基础
 
-GPU Architecture is meant for very specific set of instructions for optimial speed. GPUs are *really* good at floating point operations. Infact they are so good, a modern GPU (in 2025) can do 15 TFLOPS (or 15,000,000,000,000) floating point operations per second. That is *fast*. 
+<img src="https://www.nvidia.cn/content/dam/en-zz/Solutions/geforce/news/rtx-50-series-graphics-cards-gpu-laptop-announcements/nvidia-blackwell-die-shot.png" width="80%" height="80%">\
 
-Unfortunately however, that is pretty much all they're good at. GPUs are *ONLY* good at fast floating point (and integer) arithmetic. This makes them fast, but limited (think of a CPU, but dumber). Shader model 20b (the one we are using) doesn't even support doubles. If you do somehow get doubles working though, I would advise against it, as they are extremely slow and not what the GPU architecture is meant for.
+GPU 架构专为特定指令集设计，以实现更快的图形处理速度。GPU 在浮点运算方面表现*极其出色*。事实上，主流 GPU（2025 年, 以 RTX 5060 为例）每秒可执行 19 万亿次（即 19,000,000,000,000 次）浮点运算，这个速度远超顶级 CPU。
+
+然而遗憾的是，这几乎是它们唯一的优势。GPU 仅擅长**高速**浮点（及整数）**运算**，意思是它们速度惊人但功能受限（可理解为*更笨的 CPU*）。我们使用的 Shader Model 20b 标准甚至不支持双精度浮点运算。即便你设法实现了双精度运算，我仍建议避免使用——这类运算极其缓慢，且完全违背了 GPU 架构的设计初衷。
 
 ### 控制流
 
-Lets move on to control flow. In languages on the CPU (Lua, C++, etc), an `if` statement is not a big deal. Guarding and preventing execution of code is usually a good thing for performance.
+接下来我们谈谈控制流。在 CPU 执行的程序（如一般的 Lua、C++ 程序）中，`if` 语句并不算什么大问题。通过条件判断来控制代码执行通常对性能影响不大。
 
-Although counterintuitive, on the GPU, this is not the case. You should avoid `if` statements when possible. Its a bit complex to explain why, but I will try my best.
+然而在 GPU 上，情况却截然相反。**你应该尽可能避免使用 `if` 语句**。具体原因有些复杂，但我会尽力解释。
 
-On the GPU, a group of threads, called a warp, are launched in an area of the screen to compute things asynchronously. Due to the GPUs architecture, when a branch occurs, this divergence will cause the other non diverging threads to hang until the statement is finished executing, and vise versa. This reduces the parallelization of GPUs and effectively halves the performance in that block of code. Each side of the if statement must be computed synchronously.
+在 GPU 中，称为“warp”的线程组（在 AMD GPU 上叫做“wavefront”）会在屏幕区域内启动异步计算。由于 GPU 架构特性（单指令多线程, SIMT），当出现分支时，这种分歧会**导致未分支的线程挂起直至语句执行完毕**，这会大大降低 GPU 的并行率，使执行性能降低，因为 `if` 语句的两侧是严格同步执行的—— GPU 并没有分支预测这种复杂控制逻辑，这就是为什么说 GPU 相较于 CPU *更笨*。
 
-Here is an example:
+以下是一个示例：
+
 ```
-if (PIXEL.x < 2) {
+if (PIXEL.x < 2)
+{
     do_work_1();
-} else {
+}
+else
+{
     do_work_2();
 }
 ```
-Lets pretend we have 1 warp with 4 threads named `0`, `1`, `2`, and `3`. Pretend we calculating a row of 4 pixels. When the GPU reaches the `if` statement, threads `2` and `3` are deactivated until threads `0` and `1` are finished with `do_work_1()`. Then, threads `0`, `1` are deactivated, and `2`, `3` are activated. Then, after `do_work_2()` finishes, all the threads are reactivated and the code continues execution. We have effectively doubled the amount of time it took to calculate `do_work_1()` and `do_work_2()`.
 
-Don't let this mislead you though. Using an `if` statement does not always halve your performance. This is only true in the worst case scenario.\
-Remember that if all threads take the same branch, efficiency is not lost.
+假设有一个包含 4 个线程的 warp，它们的线程 ID 分别是 `0`、`1`、`2` 和 `3`，并假设我们正在计算一行 4 个像素。当 GPU 执行到 `if` 语句时，线程 `2` 和 `3` 会被挂起，直到线程 `0` 和 `1` 完成 `do_work_1()` 的执行。随后，线程 `0` 和 `1` 被挂起，`2` 和 `3` 被重新激活；待 `do_work_2()` 完成后，所有线程重新激活并继续执行代码。这实际上使 `do_work_1()` 和 `do_work_2()` 的计算时间翻倍。
 
-If none of that made sense, all you really need to know is that you should avoid code branching, wherever possible. This includes (but is not limited to): `if-else`, `continue`, and `break` statements.
+但请不要因此产生误解。使用 `if` 语句并不总是导致性能减半，这仅在最坏情况下成立——**若所有线程都选择同一分支，效率并不会损失**。
+
+若以上解释仍令人困惑，那么只需记住：**应尽可能避免分支**，包括但不限于：`if-else`、`continue` 和 `break` 语句。
 
 ### 循环
-In this guide, We are using shader model 20b. Model 20b is interesting because (as far as I'm aware) all loops need to be [unrolled](https://en.wikipedia.org/wiki/Loop_unrolling), and cannot be dynamic.
+在本指南中，我们使用的是 Shader Model 20b，这个版本有点特别，因为所有循环都需要展开处理（详见：https://en.wikipedia.org/wiki/Loop_unrolling），并且不是动态的。
 
-Shader model 30 does support dynamic loops, but for now I would suggest avoiding them, as infinite loops on the GPU lock up your computer and usually require a full system restart.
+Shader Model 30 虽支持动态循环，但目前建议避免使用—— GPU 上跑无限循环会导致停机，轻则显卡驱动崩溃，重则需要重启整个系统。
 
-To continue, navigate to `gmod_shader_guide/shaders` and take a look at `example4_ps2x.hlsl`
+为了进一步加深理解，请导航至 `gmod_shader_guide/shaders` 目录，查看 `example4_ps2x.hlsl` 着色器源文件。
 
 # [示例 5] - 顶点着色器
 

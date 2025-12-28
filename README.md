@@ -114,7 +114,7 @@ https://github.com/lua9520/source-engine-2018-cstrike15_src/blob/master/material
 
 > [!NOTE]
 > 修改着色器但不改 `.vmt` 时需要重启游戏来重新加载。\
-> 在你真正开始学习如何编辑 `.vmt` 之前，建议直接重启游戏——这是最简单的方法。添加启动选项 `-noworkshop` 有时会大大缩短加载时间。
+> 在你真正开始学习如何编辑 `.vmt` 之前，建议直接重启游戏，这是最简单的方法。添加启动选项 `-noworkshop` 有时会大大缩短加载时间。
 
 > [!TIP]
 > 当你开始写自己的着色器时，请尽量给它们取一个有辨识度的、不普通的名称，否则可能会出现名称冲突。
@@ -161,9 +161,9 @@ https://github.com/lua9520/source-engine-2018-cstrike15_src/blob/master/material
 > 其中大多数可能没什么用，但有些时候会派上用场。
 
 # [示例 4] - GPU 架构
-Now that we know the basic syntax and general control of pixel shaders, I feel like its a good time to start looking at GPU architecture and control flow. It is important for you to think about GPUs as an entirely different computer, because in reality, they are. GPUs have their own processor, RAM, motherboard, firmware, and even cooling. 
+现在我们已经了解了像素着色器的基本语法和总体控制，接下来是时候开始研究 GPU 架构与控制流了。你需要把 GPU 当作一台完全不同的计算机来思考——事实上它确实是：GPU 有自己的处理器、显存、主板、固件，甚至独立散热。
 
-GPUs operate *very* different compared to CPUs, so be prepared to think a bit differently than normal.
+与 CPU 相比，GPU 的工作方式截然不同，所以你需要以不同于常规的思路来考虑问题。
 
 ### 架构基础
 

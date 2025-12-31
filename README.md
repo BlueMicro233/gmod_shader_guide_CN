@@ -217,20 +217,20 @@ Shader Model 30 虽支持动态循环，但目前建议避免使用—— GPU �
 
 # [示例 5] - 顶点着色器
 
-Now that we have the basics on everything pixel shader related, it's time to jump into vertex shaders.
+既然我们已经掌握了像素着色器的基础知识，现在该深入学习顶点着色器了。
 
-Like I explained earlier in [The Shader Pipeline](#the-shader-pipeline), vertex shaders are the section of code which transforms 3D coordinates onto the screen. As you'd expect, vertex shaders run shader code for every vertex.
+正如我在[着色器管线](#the-shader-pipeline)中解释的那样，顶点着色器的主要职能是将 3D 坐标转换到 2D 屏幕上。就像像素着色器跑在每个像素上一样，每个顶点都运行顶点着色器代码，否则它们根本不会被最终呈现在屏幕上。
 
-Vertex shaders are super important, as they also give information to the pixel shader. Usually, vertex shaders pass things like [texture coordinates](https://en.wikipedia.org/wiki/UV_mapping), but it's really up to you.
+顶点着色器至关重要，因为它还向像素着色器传递信息。通常会传递诸如[纹理坐标](https://en.wikipedia.org/wiki/UV_mapping)之类的结构，但具体传递什么完全取决于你。
 
-In this vertex shader example, we are going to be including some Valve helper functions. The source code is in the `.h` files you might have seen earlier.
+在本顶点着色器示例中，我们将引入 Valve Helper Function。源代码位于你可能见过的 `.h` 文件中。
 
-These files include a bunch of useful functions and definitions for us to use. A good example is `cEyePos`, which returns the current eye position of the player (as you can imagine, this can be useful in many types of shaders).
+这些文件包含大量实用的函数和定义供我们调用。例如 `cEyePos` 函数可返回玩家当前的视角位置（这功能在各类着色器中均有广泛应用）。
 
-Now, type `shader_example 5` in console and take a quick look at what this shader currently produces. It should look like this:\
+现在，在 GMod 控制台输入`shader_example 5`，快速查看当前着色器的渲染效果。输出应如下所示：\
 <img src="https://github.com/user-attachments/assets/9efe05ee-a962-45df-aa8b-1b84e297f655" width="50%" height="50%">
 
-Then, take a look at `example5_ps2x.hlsl`. Feel free to make your own changes.
+接着查看`example5_ps2x.hlsl`文件，你可以自由探索并修改代码，看看会发生什么。
 
 > [!NOTE]
 > We no longer need the `$vertextransform` and `$ignorez` flags defined in the .vmt because we aren't doing screenspace operations anymore.

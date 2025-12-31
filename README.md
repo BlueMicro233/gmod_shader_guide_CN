@@ -233,16 +233,16 @@ Shader Model 30 虽支持动态循环，但目前建议避免使用—— GPU �
 接着查看`example5_ps2x.hlsl`文件，你可以自由探索并修改代码，看看会发生什么。
 
 > [!NOTE]
-> We no longer need the `$vertextransform` and `$ignorez` flags defined in the .vmt because we aren't doing screenspace operations anymore.
+> 这次就不需要 vmt 文件里的 `$vertextransform` 和 `$ignorez` 这俩 flag 了，因为我们现在不做屏幕空间的操作。
 
 > [!NOTE]
-> You **CANNOT** sample a texture within the vertex shader.
+> 你 **不能** 用顶点着色器去采样纹理，这是早期固定管线 GPU 架构的历史原因所致，有兴趣的话可以看 B 站课程了解。
 
 > [!TIP]
-> By default, the shader renders on both sides. I set the `$cull` flag to 1 in the .vmt to disable this, as it's usually undesired.
+> 在默认情况下，一个表面的正反两面都会被渲染。因为一般渲染背面并没有什么用而且徒增性能消耗，所以一般会在 vmt 里加个 `$cull` 的 flag 并设置为 1 来做背面剔除优化。
 
 > [!TIP]
-> For performance reasons, it is generally a good idea to keep as many calculations as possible within the vertex shader, because the pixel shader runs a lot more than the vertex shader.
+> 出于性能优化的考量，一般都尽可能地让运算跑在顶点着色器上，因为一般情况下像素着色器的运行次数远多于顶点着色器。
 
 # [示例 6] - 顶点着色器常量
 

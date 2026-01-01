@@ -174,6 +174,9 @@ https://github.com/lua9520/source-engine-2018-cstrike15_src/blob/master/material
 与 CPU 相比，GPU 的工作方式截然不同，所以你需要以不同于常规的思路来考虑问题。
 
 ### 架构基础
+GPU 示意图：\
+![Blackwell GB202 GPU](https://www.nvidia.cn/content/dam/en-zz/Solutions/geforce/news/rtx-50-series-graphics-cards-gpu-laptop-announcements/nvidia-blackwell-die-shot.png)\
+<sup><sub>(图片来自 NVIDIA)<sup><sub>
 
 
 GPU 架构专为特定指令集设计，以实现更快的图形处理速度。GPU 在浮点运算方面表现*极其出色*。事实上，主流 GPU（2025 年, 以 RTX 5060 为例）每秒可执行 19 万亿次（即 19,000,000,000,000 次）浮点运算，这个速度远超顶级 CPU。

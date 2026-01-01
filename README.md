@@ -174,7 +174,6 @@ https://github.com/lua9520/source-engine-2018-cstrike15_src/blob/master/material
 与 CPU 相比，GPU 的工作方式截然不同，所以你需要以不同于常规的思路来考虑问题。
 
 ### 架构基础
-GPU 示意图：\
 ![Blackwell GB202 GPU](https://www.nvidia.cn/content/dam/en-zz/Solutions/geforce/news/rtx-50-series-graphics-cards-gpu-laptop-announcements/nvidia-blackwell-die-shot.png)\
 <sup><sub>(图片来自 NVIDIA)<sup><sub>
 

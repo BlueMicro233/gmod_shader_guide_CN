@@ -69,26 +69,25 @@ end
 -----------------------------------------------------------
 local material6 = Material("gmod_shader_guide/example6.vmt")
 local dummy_model = ClientsideModel("models/shadertest/vertexlit.mdl")
-dummy_model:SetModelScale(0)	-- make it invisible
+dummy_model:SetModelScale(0)	-- 让模型不可见
 local function set_vertex_metadata(x, y, z)
-	-- make sure to supress engine lighting before setting it up, otherwise we won't override anything
-	render.SuppressEngineLighting(true)	
-
-	-- Actually send our metadata to the shader. In this case, I am using the front part of the cube (0)
-	-- You can use different directions to send up to 6 different constants
-	-- (The source code of which can be found in common_vs_fxc.h)
+	-- 截胡原来引擎想要发送给 GPU 的光照信息，否则下面的更改将无效
+	render.SuppressEngineLighting(true)
+	-- 向着色器传输元数据。这里，使用 ambient cube（起源引擎的光照探针）的正面 (0 号方向) 
+	-- ambient cube 探针存储 6 个方向的环境光照信息，这意味着我们可以传 6 个不同的元数据
+	-- (源代码可以在 common_vs_fxc.h 里被找到)
 	render.SetModelLighting(0, x, y, z)
 
-	-- Forces sourceengine to set up our custom lighting
+	-- 强制起源引擎使用我们的模型进行渲染
 	dummy_model:DrawModel()
 
-	-- Don't forget to reenable lighting!
+	-- 不要忘了重新开启光照！
 	render.SuppressEngineLighting(false)
 end
 
 local function example6()
 	render.SetMaterial(material6)
-	set_vertex_metadata(CurTime(), 0, 0)
+	set_vertex_metadata(0, CurTime(), 0)
 	render.DrawSphere(Vector(), 50, 10, 10)
 end
 

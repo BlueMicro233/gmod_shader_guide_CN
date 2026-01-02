@@ -249,21 +249,21 @@ Shader Model 30 虽支持动态循环，但目前建议避免使用—— GPU �
 
 <img width="484" height="530" alt="meme" src="https://github.com/user-attachments/assets/a4e2bb67-879d-4d06-b268-2bc7d3a89725" />
 
-The source code for `screenspace_general` does not specify any custom constants we can use to input data into the vertex shader.
+`screenspace_general` 没有为顶点着色器指定用于传入用户自定义数据的常量。
 
-In order to get metadata into our vertex shader, we are going to need to sneak it in through existing constants, since there aren't any explicitly defined. This is pretty hacky, but I'm not aware of any other way.
+为了将元数据传入顶点着色器，我们需要通过**修改现有常量**来实现，因为没有专门的自定义常量可供传入。这种方法相当 hack，但我目前尚未发现其他可行方案。
 
-I've seen people use fog data and the projection matrix, but for our case I am going to use the ambient cube. I have chosen to do this, as it is pretty versatile and allows for up to 18 custom inputs.
+我见过有人利用雾数据和投影矩阵实现，但针对当前场景我选择采用环境光照探针（ambient cube）。此方案兼容性强，最多可支持 18 个（对应 6 个面的 RGB 值）自定义输入参数。
 
-If there is another, cleaner technique, please make an issue or pull request to this repository so it can be documented!
+若存在更优雅的实现方式，欢迎在此仓库提交 issue 或 pull request 以便完善文档！
 
-Here is an image of what `shader_example 6` should look like:\
+以下是`shader_example 6`的预期效果图：\
 <img src="https://github.com/user-attachments/assets/ca379402-9bb6-41de-94cc-011b5151bb48" width="50%" height="50%">
 
-After you view `shader_example 6`, open `example6_vs2x.hlsl` and `gmod_shader_guide/lua/autorun/client/shader_examples.lua` to get an understanding of how this works.
+看完`shader_example 6`的效果后，请打开`example6_vs2x.hlsl`和`gmod_shader_guide/lua/autorun/client/shader_examples.lua`以理解其工作原理。
 
 > [!NOTE]
-> This example reuses the pixel shader from [Example 5](#example-5---vertex-shaders)
+> 这里像素着色器代码复用 [示例 5](#示例-5---顶点着色器)
 
 # [示例 7] - 渲染目标 Render Target
 We're going to take a small detour with shaders to talk about render targets, as they are very important when implementing your own render pipelines.

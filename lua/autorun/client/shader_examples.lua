@@ -98,13 +98,14 @@ end
 -----------------------------------------------------------
 
 --
--- This is probably the most complex code example in this guide. 
--- Although its not really meant to be read, I apologize for any confusion it may cause!
+-- 这应该是整个教程里最复杂的代码
+-- 并不强求逐字逐句地理解这些，而是要理解它的整体思路
 --
 
 local rt_mat = CreateMaterial("ex7_mat", "UnlitGeneric", {["$ignorez"] = 1, ["$basetexture"] = "lights/white"})
 
--- fills a rendertarget with a grass block texture
+-- 让我们创建一个函数来填充渲染目标
+-- 这里，使用一个草方块纹理来填充渲染目标
 local function fill_rt(rt)
 	rt_mat:SetTexture("$basetexture", "gmod_shader_guide/grass_block")
 	render.SetMaterial(rt_mat)
@@ -114,20 +115,20 @@ local function fill_rt(rt)
 	render.PopRenderTarget()
 end
 
--- create some render targets. the only thing changing here are the texture flags
+-- 创建一些渲染目标，它们唯一有区别的地方在于 flag
 local nopoint_noclamp = GetRenderTargetEx("ex7_0", 16, 16, 0, 2,  16,          0, 0) fill_rt(nopoint_noclamp)
 local point_noclamp   = GetRenderTargetEx("ex7_1", 16, 16, 0, 2,  1,           0, 0) fill_rt(point_noclamp)
 local nopoint_clamp   = GetRenderTargetEx("ex7_2", 16, 16, 0, 2,  4 + 8 + 16,  0, 0) fill_rt(nopoint_clamp)
 local point_clamp     = GetRenderTargetEx("ex7_3", 16, 16, 0, 2,  1 + 4 + 8,   0, 0) fill_rt(point_clamp)
 
--- draw_texture is an insanely inefficient function btw. Don't use this code
+-- 顺带一提，这个 draw_texture 是一个非常低效的函数，不要用在你做的东西里
 local function draw_texture(texture, x, y, size)
-	-- Set our material texture to our rendertarget
+	-- 设置材质到我们的渲染目标
 	rt_mat:SetTexture("$basetexture", texture:GetName())
 	render.SetMaterial(rt_mat)
 
 	cam.Start2D()
-	-- this is pretty cursed but I need a mesh with wacky UVs
+	-- 这相当糟糕，但我需要一个 UV 很奇怪的网格
 	mesh.Begin(MATERIAL_QUADS, 1)
 		mesh.Position(x, y, 0)
 		mesh.TexCoord(0, -1, -1)

@@ -266,30 +266,31 @@ Shader Model 30 虽支持动态循环，但目前建议避免使用—— GPU �
 > 这里像素着色器代码复用 [示例 5](#示例-5---顶点着色器)
 
 # [示例 7] - 渲染目标 Render Target
-We're going to take a small detour with shaders to talk about render targets, as they are very important when implementing your own render pipelines.
+我们将暂时绕开着色器的话题，重点讲解 Render Target 的概念——在实现**自定义渲染管线**时，它们至关重要。
 
-The concept of a render target is quite simple. A render target is just a texture that you can edit.\
-Unless specified otherwise (using IMAGE_FORMAT) a render target has 4 color channels (Red, Green, Blue, Alpha) which you should already understand fairly well.
+渲染目标的概念其实很简单：它本质上就是可编辑的**纹理。**
 
-`shader_example 7` Shows you different flags you can use in a 16x16 render target.\
+除非另有说明（通过 IMAGE_FORMAT 指定），渲染目标默认拥有 4 个颜色通道（红、绿、蓝、透明度），这些概念你应已经相当熟悉。
+
+`shader_example 7` 展示了在 16x16 渲染目标中可使用的不同 flag。\
 ![image](https://github.com/user-attachments/assets/32b1a036-b92b-47f7-9591-68fa527a3aee)
 
-Because this example is more of an explanation, it doesn't use any custom shaders. And since I don't really have anything else to say, I am going to document some of my findings about render targets which some people may find useful.
+由于这个示例更侧重于说明，因此并未使用任何自定义着色器。鉴于我没有其他要补充的内容，我将记录一些关于渲染目标的发现，这些内容或许对一些人有所帮助。
 
 > [!NOTE]
-> Despite what the wiki tells you, render targets do not have mipmapping.
+> 渲染目标没有 mipmap。
 
 > [!NOTE]
-> In a shader you should still return a color space of `0.0 - 1.0` regardless of the render targets IMAGE_FORMAT
+> 在着色器中，无论渲染目标的 IMAGE_FORMAT 如何，都应返回 `0.0 - 1.0` 的颜色空间。
 
 > [!NOTE]
-> Source Engine is really weird and does gamma correction on render targets (INCLUDING on the alpha channel!), meaning you will likely want to use the `$linearwrite` flag on your shader if you want exact results. This is particularly useful with UI shaders
+> Source 相当怪异，它会自动在渲染目标上执行伽马校正（包括 Alpha 通道！），这意味着若需获得真正的结果，你很可能需要在着色器中使用 `$linearwrite` 标志。知道这一点这对 UI 着色器制作尤为重要。
 
 > [!NOTE]
-> MATERIAL_RT_DEPTH_SHARED does not work when MSAA is enabled, and will automatically be set to MATERIAL_RT_DEPTH_SEPARATE
+> 启用 MSAA 时，MATERIAL_RT_DEPTH_SHARED 将失效，并自动设置为 MATERIAL_RT_DEPTH_SEPARATEMATERIAL_RT_DEPTH_SHARED。
 
 > [!NOTE]
-> You can input a render target as a sampler with [IMaterial:SetTexture](https://wiki.facepunch.com/gmod/IMaterial:SetTexture)
+> 可以通过 [IMaterial:SetTexture](https://wiki.facepunch.com/gmod/IMaterial:SetTexture) 将渲染目标作为一个采样器来输入。
 
 # [示例 8] - 多渲染目标 (MRT)
 Multi-render target (abbreviated MRT) is a rendering technique which allows a shader to output to multiple render targets in a single pass. This means you can output more useful data which may be required in later stages of a rendering pipeline.

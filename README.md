@@ -39,7 +39,7 @@
 - [\[示例 5\] - 顶点着色器](#示例-5---顶点着色器)
 - [\[示例 6\] - 顶点着色器常量](#示例-6---顶点着色器常量)
 - [\[示例 7\] - 渲染目标 Render Target](#示例-7---渲染目标-render-target)
-- [\[示例 8\] - 多渲染目标 (MRT)](#示例-8---多渲染目标-mrt)
+- [\[示例 8\] - 多重渲染目标 (MRT)](#示例-8---多重渲染目标-mrt)
 - [\[示例 9\] - 深度缓冲](#示例-9---深度缓冲)
 - [\[示例 10\] - 模型上的着色器](#示例-10---模型上的着色器)
 - [\[示例 11\] - 实例化网格 (IMeshes)](#示例-11---实例化网格-imeshes)
@@ -292,41 +292,41 @@ Shader Model 30 虽支持动态循环，但目前建议避免使用—— GPU �
 > [!NOTE]
 > 可以通过 [IMaterial:SetTexture](https://wiki.facepunch.com/gmod/IMaterial:SetTexture) 将渲染目标作为一个采样器来输入。
 
-# [示例 8] - 多渲染目标 (MRT)
-Multi-render target (abbreviated MRT) is a rendering technique which allows a shader to output to multiple render targets in a single pass. This means you can output more useful data which may be required in later stages of a rendering pipeline.
+# [示例 8] - 多重渲染目标 (MRT)
+多重渲染目标（MRT）是一种渲染技术，它允许着色器一次 pass 输出多个渲染目标，这意味这我们可以输出更多有用的数据，这些数据可能在后续的渲染阶段会用到。 
 
 ![image](https://github.com/user-attachments/assets/d4105837-485f-4677-a802-99740487f91f)
 
-Example 8 is simply 2 different postprocessing shaders of the [framebuffer](https://en.wikipedia.org/wiki/Framebuffer) (the rendered frame) running at the same time. When you type `shader_example 8`, you will see 2 rendertargets. The top is the first output, the bottom is the second. MRT allows for up to 4 separate render targets to be written to at a time.
+示例 8 同时运行的两个不同的[帧缓冲区](https://en.wikipedia.org/wiki/Framebuffer)（即渲染帧）后处理着色器。当你输入 `shader_example 8` 时，将看到两个渲染目标。上方为首个输出结果，下方为第二个输出结果。MRT 支持同时写入最多 4 个独立的渲染目标。
 
-Take a look at `example8_ps2x.hlsl` for the syntax.
-
-> [!NOTE]
-> When doing MRT, ensure you output to render targets that are the same resolution as your render context (usually just the screen resolution), otherwise you may run into undefined behavior.
+好，现在请打开 `example8_ps2x.hlsl` 来学习语法。
 
 > [!NOTE]
-> Any operations on the GPU which read or write memory are quite expensive, this includes (but is not limited to) any of the texture sampler functions (tex1D, tex2D, tex2Dlod, etc) and MRT
+> 进行 MRT 渲染时，请确保向渲染目标的输出和渲染上下文的分辨率一致（通常即屏幕分辨率），否则可能导致未定义行为。
+
+> [!NOTE]
+> 任何涉及内存访问的 GPU 操作都相当耗费资源，这包括（但不限于）所有纹理采样器函数（如 tex1D、tex2D、tex2Dlod 等）以及 MRT（显存带宽占用极高）。
 
 # [示例 9] - 深度缓冲
-This isn't something that everybody really needs, but it can be handy for a few different operations, so I'll document it.
+这并非人人都需要的东西，但它在某些操作中会派上用场，因此接下来将介绍。
 
-A [depth buffer](https://en.wikipedia.org/wiki/Z-buffering) is basically just a rendertarget that stores the depth of a pixel on the screen. It essentially determines what triangles are allowed to draw on top of other triangles. A lower depth value means that a triangle is closer to the screen.
+[深度缓冲](https://en.wikipedia.org/wiki/Z-buffering)本质上就是一个存储像素深度值的渲染目标。它决定了哪些三角形可以绘制在其他三角形之上，深度值越低，表示三角形离屏幕越近。
 
-Example of the depth buffer:\
+深度缓冲示例:\
 ![250px-R_depthoverlay](https://github.com/user-attachments/assets/64aac3e9-bff1-4a06-9fcb-f31173318ce7)
 
-During rasterization, the GPU will automatically compute the depth of a triangle, but we can actually override this using the DEPTH0 semantic in any pixel shader.
+在光栅化阶段，GPU 会自动计算三角形的深度，但我们实际上可以在任何像素着色器中使用 DEPTH0 语义覆盖此计算。
 
-`shader_example 9` is a good example of this. This sphere being drawn only uses 2 triangles (I have outlined them with wireframe), but has pixel level precision.\
+`shader_example 9` 正是此类情况的典型示例。这个绘制的球体仅使用了两个三角形（我已用线框将其勾勒出来），却能实现像素级精度。\
 ![image](https://github.com/user-attachments/assets/cf8a7a96-b465-458e-a314-03faf14b721b)
 
-Take a look at `example9_vs2x.hlsl` and `example9_ps2x.hlsl` for syntax and explanation of how it works
+查看 `example9_vs2x.hlsl` 和 `example9_ps2x.hlsl` 以进一步了解原理及其具体实现。
 
 > [!NOTE]
-> If you want to write depth, screenspace_general requires the `$depthtest` flag in the .vmt to be set to 1
+> 若需实现深度测试，需在 .vmt 文件中将 `$depthtest` flag 设置为 1。
 
 > [!NOTE]
-> The DEPTH0 semantic disables culling optimizations and creates shader overdraw, which can cause high [fillrates](https://en.wikipedia.org/wiki/Fillrate) and negatively impact performance. Avoid it if possible.
+> DEPTH0 语义会禁用掉剔除优化，导致着色器过度绘制，这可能造成[填充率](https://en.wikipedia.org/wiki/Fillrate)过高并影响性能。尽量避免使用。
 
 # [示例 10] - 模型上的着色器
 screenspace_general has a flaw, and unfortunately this flaw is stopping the shader from being able to be used on normal props without some issues.\

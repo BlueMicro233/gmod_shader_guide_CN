@@ -329,14 +329,14 @@ Shader Model 30 虽支持动态循环，但目前建议避免使用—— GPU �
 > DEPTH0 语义会禁用掉剔除优化，导致着色器过度绘制，这可能造成[填充率](https://en.wikipedia.org/wiki/Fillrate)过高并影响性能。尽量避免使用。
 
 # [示例 10] - 模型上的着色器
-screenspace_general has a flaw, and unfortunately this flaw is stopping the shader from being able to be used on normal props without some issues.\
+screenspace_general 存在缺陷，该缺陷导致着色器无法在 prop 物件上正常使用。\
 ![image](https://github.com/user-attachments/assets/9b92b1e2-2844-46ff-b443-4ad8b82e9942)
 
-The problem has to do with [this line of code](https://github.com/sr2echa/CSGO-Source-Code/blob/dafb3cafa88f37cd405df3a9ffbbcdcb1dba8f63/cstrike15_src/materialsystem/stdshaders/screenspace_general.cpp#L173). Remember before when we were talking about the depth buffer? This line basically says "ALWAYS WRITE TO THE DEPTH BUFFER NO MATTER WHAT", meaning that even if a triangle is further than another triangle when it is being rendered, depth is still being written to. This is a problem when considering normal rendering operations.
+问题出在[这行代码](https://github.com/sr2echa/CSGO-Source-Code/blob/dafb3cafa88f37cd405df3a9ffbbcdcb1dba8f63/cstrike15_src/materialsystem/stdshaders/screenspace_general.cpp#L173)上。还记得之前讨论深度缓冲吗？这行代码本质上表示“**无论如何都必须写入深度缓冲**”，这意味着即使渲染时某个三角形比另一个更远，深度值仍会被写入。对于常规渲染操作而言，这会造成问题。
 
-We learned however that we can override this behavior with the DEPTH0 semantic and the `$depthtest` flag. While you *could* fix it this way, I want to do a more trivial approach which doesn't involve this method (Remember I briefly talked about it being not ideal).
+然而我们了解到，可以通过 DEPTH0 语义和 `$depthtest` 标志来覆盖此行为。虽然你*能*用这种方式修复，但我更倾向于采用一种更简单的方案，避免使用该方法（我曾简要提到过它并非理想方案）。
 
-To fix this problem trivially, I introduce `render.OverrideDepthEnable`, which allows you to override this flag.
+这个方案就是引入 `render.OverrideDepthEnable` ，它允许你覆盖深度写入行为。
 
 Take a look at `shader_example 10` for a visualization that toggles `render.OverrideDepthEnable`:\
 ![image](https://github.com/user-attachments/assets/908568a3-cd1d-4740-95a9-5aa091872220)

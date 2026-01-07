@@ -342,19 +342,19 @@ screenspace_general 存在缺陷，该缺陷导致着色器无法在 prop 物件
 
 这个方案就是引入 `render.OverrideDepthEnable` ，它允许你覆盖深度写入行为。
 
-Take a look at `shader_example 10` for a visualization that toggles `render.OverrideDepthEnable`:\
+控制台输入 `shader_example 10` 来看看效果，该效果会切换 `render.OverrideDepthEnable` 的状态：\
 ![image](https://github.com/user-attachments/assets/908568a3-cd1d-4740-95a9-5aa091872220)
 
-This of course begs the question, `"What if I want to use my shader on a prop, like a normal material?"`.\
-And truthfully I don't know a fix for that. You will need to use the DEPTH0 semantic.
+这自然引出了一个问题：`“如果我想在道具上使用着色器，就像普通材质那样呢？”`\
+老实说，我对此没有解决办法。你仍需使用 DEPTH0 语义。
 
-You will also need to have flags `$softwareskin 1`, `$vertexnormal 1`, and `$model 1` on your .vmt so the model renders properly.
+你还需要在 .vmt 文件中设置 `$softwareskin 1`、`$vertexnormal 1` 和 `$model 1`，以确保模型能正确渲染。
 
-`$softwareskin` basically disables normals compression, and while you *can* have compression enabled on your shader (you will need to do `#define COMPRESSED_VERTS 1` before including `common_vs_fxc.h`, then call `DecompressVertex_Normal` on your modelspace normal before skinning it), but for simplicity I would suggest avoiding this for now and just setting the .vmt flag.
+`$softwareskin` 会禁用法线压缩。虽然你*可以*在着色器中启用压缩（需要在 `#include common_vs_fxc.h` 之前执行 `#define COMPRESSED_VERTS 1`，然后在进行蒙皮操作前对模型空间法线调用 `DecompressVertex_Normal`）， 但为了简化流程，建议规避此操作，只设置 .vmt 里的东西即可。
 
-`$vertexnormal` basically just says "Hey! this model has normals!" and lets entities / props render normally. Otherwise the material won't work.
+`$vertexnormal` 其实就是在说 “嘿！这个模型有法线！”，使得实体/ prop 能正常地渲染，否则材质就无法生效。
 
-And finally, `$model` just tells SourceEngine that you can put your material on a physical entity (I'm honestly not too sure why this flag exists. Is it for performance reasons? So shaders load faster? I honestly don't know).
+最后，`$model` 只是告诉游戏引擎你可以将材质应用到物理实体上（说实话我不太确定这个 flag 存在的意义——是为了性能考虑吗？还是让着色器加载更快？我不知道）。
 
 # [示例 11] - 实例化网格 (IMeshes)
 

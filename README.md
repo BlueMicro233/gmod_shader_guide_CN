@@ -358,80 +358,81 @@ screenspace_general 存在缺陷，该缺陷导致着色器无法在 prop 物件
 
 # [示例 11] - 实例化网格 (IMeshes)
 
-I think its time we should move into IMeshes, which are a form of procedural geometry.
+我认为现在是时候转向 IMesh 了，这是一种程序化几何。
 
-In case you don't know already, a [mesh](https://en.wikipedia.org/wiki/Polygon_mesh) is a bunch of vertices and indices that define the triangles in a model.
+如果你还不了解，[网格](https://en.wikipedia.org/wiki/Polygon_mesh)是由顶点和索引组成的，用于确定模型中的三角形。
 
-IMeshes are a brilliant way to generate and render custom geometry quickly. They are very versatile because we can put our own custom data on every vertex in a mesh.
+IMeshes 是快速生成和渲染**自定义几何体**的绝佳方案。其强大之处在于可为网格中每个顶点添加自定义数据。
 
-`shader_example 11` is just an example of vertex coloring, and mesh [instancing](https://en.wikipedia.org/wiki/Geometry_instancing):\
+`shader_example 11` 仅展示了顶点着色与[实例化](https://en.wikipedia.org/wiki/Geometry_instancing)网格的示例：\
 <img src="https://github.com/user-attachments/assets/1818d19d-15f4-41c2-8181-98b435ac8da4" width="50%" height="50%">
 
-Each triangle you see is 1 mesh being rendered at a location, in this case a 10x10 grid.
-Note that this shader also introduces the `$vertexcolor` flag, which is required when toying with meshes that include vertex coloring
+每个可见三角形代表一个网格在特定位置渲染的效果，此处采用 10x10 网格布局。
+请注意该着色器还引入了 `$vertexcolor`，当处理包含顶点着色的网格时必须启用此 flag。
 
-I've also set `$cull` to 0 to ensure the shader runs on both sides of the triangle
+我同时将 `$cull` 设为 0，确保着色器在三角形两侧均能运行
 
-You can also give the shader more data, for instance with `mesh.UserData` which takes the `TANGENT` vertex input.
+您还可以通过 `mesh.UserData` 向着色器传递更多数据，例如接收 `TANGENT` 顶点输入。
 
-Just remember when rendering these meshes to call `render.OverrideDepthEnable` or you'll run into the problem we had in [Example 10](#example-10---shaders-on-models)
-
-> [!NOTE]
-> Despite what the wiki says, avoid using [IMesh:BuildFromTriangles](https://wiki.facepunch.com/gmod/IMesh:BuildFromTriangles). [mesh.Begin](https://wiki.facepunch.com/gmod/mesh.Begin) is more efficient and has less memory overhead. Just ensure your code does not error inside of a `mesh.Begin` or you will crash (I suggest using a pcall).
+渲染这些网格时请务必调用`render.OverrideDepthEnable`，否则将重现[示例10](#example-10---shaders-on-models)中的问题
 
 > [!NOTE]
-> To properly set up lighting on an IMesh (When using shaders like VertexLitGeneric), you will need to render a model to force SourceEngine to set up lighting.
+> 尽量避免使用 [IMesh:BuildFromTriangles](https://wiki.facepunch.com/gmod/IMesh:BuildFromTriangles)， `mesh.Begin`(https://wiki.facepunch.com/gmod/mesh.Begin) 效率更高且内存开销更小。只需确保代码在`mesh.Begin`内部不报错，否则会导致崩溃（建议使用 pcall）。
 
 > [!NOTE]
-> All of the warnings on [this page](https://wiki.facepunch.com/gmod/Enums/MATERIAL) stating the primative types "don't work" are incorrect. They all work.
+>  要为 IMesh 正确设置光照（使用 VertexLitGeneric 等着色器时），需渲染模型以强制 游戏引擎构建光照。
+
+> [!NOTE]
+> [此页面](https://wiki.facepunch.com/gmod/Enums/MATERIAL)上所有关于类型无法使用的警告均不正确。这些类型均可正常运作。
 
 # [示例 12] - 点精灵
-We're nearing the end of this guide, which means that the upcoming examples are less practical, but still worth documenting.
+本指南即将结束，这意味着接下来的示例实用性较低，但仍有写入文档的价值。
 
-The point sprites in Source Engine are displayed on the screen using a [geometry shader](https://learn.microsoft.com/en-us/windows/win32/direct3d11/geometry-shader-stage).
+Source 引擎中的点精灵通过[几何着色器](https://learn.microsoft.com/en-us/windows/win32/direct3d11/geometry-shader-stage)在屏幕上显示。
 
-Don't get geometry shaders confused with vertex shaders, which *modify* existing vertices. Geometry shaders allow you to *create* vertices.
+请注意几何着色器与顶点着色器不同——后者仅能*修改*现有顶点，而几何着色器能*创建*顶点。
 
-In this case, point sprites have a hardcoded geometry shader, which we can utilize. If we generate a mesh with the `MATERIAL_POINTS` primative and specify the `PSIZE` semantic in the vertex shader, we can create our very own point sprites.
+本例中点状精灵采用硬编码的几何着色器，我们可以加以利用。通过 `MATERIAL_POINTS` 基元生成网格，并在顶点着色器中指定 `PSIZE` 语义，即可创建专属点状精灵。
 
-Theres some wacky math involved in getting the sprite size look correct, but I think I've done it properly.
+要让精灵尺寸看起来正确需要一些奇特的数学运算，但我认为我已经正确实现了。
 
-Although not the most powerful thing, point sprites can create some pretty neat effects, like `shader_example 12`:\
+虽然点精灵并非最强大的功能，但它能创造出相当酷炫的效果，例如 `shader_example 12`：\
 ![image](https://github.com/user-attachments/assets/ed54109b-abfe-4a99-99c3-5b3d1f200d0a)
 
-Unfortunately, this is pretty much the most you can do with them within Source Engine.
+遗憾的是，这几乎是 Source 引擎中点精灵能实现的全部效果了，由于几何着色器本身其实是 DirectX 10 才有的特性，这里只能模拟出相当有限的效果。
 
 > [!NOTE]
-> Point sprites for some reason have a size limit of about 100 pixels making them honestly pretty useless for anything practical
+> 点精灵不知道为什么存在约 100 像素的尺寸限制，这使得它们在实际应用中几乎毫无用处。
 
 > [!NOTE]
-> This example reuses the pixel shader from [Example 11](#example-11---imeshes)
+> 这个粒子复用了 [示例 11](#示例-11---实例化网格-imeshes) 的像素着色器
 
 # [示例 13] - 3D 材质
-Remember earlier when we sampled textures? Well you can actually sample them in 3D too! These are called Volumetric Textures and you can imagine them like a ton of 2D images stacked on top of each other.
 
-Example of a volumetric texture:\
+还记得之前我们利用 UV 对纹理进行采样吗？其实你也可以在 3D 空间中采样纹理！这种技术被称为体积纹理，你可以把它想象成大量 2D 纹理层层堆叠而成。
+
+体积纹理示例：\
 ![image](https://github.com/user-attachments/assets/e63d2311-568b-4abf-b008-0a08de4bf63c)
 
-There isn't too much else to say, as this is a relatively small concept. I have provided a seamless volumetric texture .vtf which I used in my [cloud shader](https://youtu.be/3A_LBtNbx7c) a few years ago. The red channel has the smallest blobs, green is medium blobs, blue is largest.
+这个概念相对简单，无需过多赘述。我提供了一个体积纹理的 .vtf 文件，它曾在我几年前的的[云纹理着色器](https://youtu.be/3A_LBtNbx7c)中使用过。红色通道表示最小斑点，绿色为中等斑点，蓝色为最大斑点。
 
-Here is a slice of the volume texture (note its quite low quality for the sake of file size):\
+以下是体积纹理的局部截取（为了控制文件大小，所以质量较低）：\
 ![worley_noise0](https://github.com/user-attachments/assets/4aa554f0-3098-4a54-b5f0-ff6d61c52a27)
 
-`example 13` simply runs a plane through this texture and displays it.\
+`示例 13` 仅需将平面穿过该纹理即可呈现效果。
 ![image](https://github.com/user-attachments/assets/59178858-7315-49db-974e-bc9ce70ebcfb)
 
-This can also be used for animated textures, as they aren't possible traditionally (screenspace_general doesn't support animated textures)
+该方法可用于实现动态纹理——传统方式无法实现此功能（screenspace_general 不支持动态纹理）。
 
 > [!NOTE]
-> This example might not work on AMD cards, I'm not actually sure why.
+> 这个示例在 AMD 显卡上可能无法运行，我不清楚具体原因。
 
 # 完成啦！
-If you made it here, you (hopefully) have read and understand everything there is to know (or atleast, that I know) about GMod shaders.\
-Please note that this is NOT a comprehensive guide on everything HLSL! There is still plenty more to learn, but this is definitely a good starting point.
+若您能看到这里，说明您（希望如此）已阅读并理解了关于 GMod 着色器的所有知识（至少是我所知的全部内容）。
+请注意，这并非 HLSL 的全面指南！着色器语言本身仍有大量内容等待探索，但这绝对是个不错的起点。
 
-If you want more shader examples, check out shaders in the [Source SDK](https://github.com/ValveSoftware/source-sdk-2013/tree/master/src/materialsystem/stdshaders) (labeled as .fxc)
+若需更多着色器示例，请查阅[Source SDK](https://github.com/ValveSoftware/source-sdk-2013/tree/master/src/materialsystem/stdshaders)中的着色器文件（以 .fxc 为后缀）
 
-Feel free to ask questions (or concerns) in the Issues tab. I will answer them best I can :)
+欢迎在 issue 问问题，我会尽力解答 :)
 
 <ins>Happy shading!</ins>
